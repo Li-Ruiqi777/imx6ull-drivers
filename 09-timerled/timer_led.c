@@ -58,7 +58,7 @@ static struct file_operations fops = {
     .write = led_write,
 };
 
-static struct miscdevice led_misc_dev = {
+static struct miscdevice key_misc_dev = {
     .minor = 144,
     .fops = &fops,
     .name = "timerled" // dev/生成的设备节点的名字
@@ -169,7 +169,7 @@ static void timer_callback(unsigned long arg)
 int led_probe(struct platform_device *dev)
 {
     int result;
-    result = misc_register(&led_misc_dev);
+    result = misc_register(&key_misc_dev);
 
     printk(KERN_INFO "patform driver loaded \n");
 
@@ -181,7 +181,7 @@ static int led_remove(struct platform_device *dev)
 {
     gpio_direction_output(led_dev.led_gpio, 1);
     gpio_free(led_dev.devid);
-    misc_deregister(&led_misc_dev);
+    misc_deregister(&key_misc_dev);
     del_timer_sync(&led_dev.timer);
     printk(KERN_INFO "patform driver unloaded \n");
 }

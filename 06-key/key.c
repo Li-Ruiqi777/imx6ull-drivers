@@ -33,13 +33,13 @@ struct key_dev gpio_key;
 #define KEY0VALUE 0XF0 // 按键值
 #define INVAKEY 0X00   // 无效按键
 
-void key_init(void);
+void key_io_init(void);
 static int key_open(struct inode *inode, struct file *file);
 static int key_release(struct inode *inode, struct file *file);
 static ssize_t key_read(struct file *file, char __user *buf, size_t count, loff_t *ppos);
 static ssize_t key_write(struct file *file, const char __user *buf, size_t count, loff_t *ppos);
-static int key_module_init(void);
-static void key_module_exit(void);
+static int key_input_init(void);
+static void key_input_exit(void);
 
 static struct file_operations fops = {
     .owner = THIS_MODULE,
@@ -65,7 +65,7 @@ static int key_release(struct inode *inode, struct file *file)
 static ssize_t key_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
 {
     struct key_dev *dev = file->private_data;
-
+    
     int val = gpio_get_value(dev->gpio_index);
     int ret = __copy_to_user(buf, &val, sizeof(val));
     return ret;
@@ -77,7 +77,7 @@ static ssize_t key_write(struct file *file, const char __user *buf, size_t count
 }
 
 // 初始化KEY
-void key_init(void)
+void key_io_init(void)
 {
     u32 val = 0;
     int ret;
@@ -138,11 +138,11 @@ void key_init(void)
     gpio_direction_input(gpio_key.gpio_index);
 }
 
-static int key_module_init(void)
+static int key_input_init(void)
 {
     int result;
     //* 通过寄存器从硬件上初始化KEY
-    key_init();
+    key_io_init();
 
     //* 动态分配设备号
     if (gpio_key.major)
@@ -187,7 +187,7 @@ static int key_module_init(void)
     return 0;
 }
 
-static void key_module_exit(void)
+static void key_input_exit(void)
 {
     device_destroy(gpio_key.class, gpio_key.devid);
     class_destroy(gpio_key.class);
@@ -196,8 +196,8 @@ static void key_module_exit(void)
     printk(KERN_INFO "key module unloaded \n");
 }
 
-module_init(key_module_init);
-module_exit(key_module_exit);
+module_init(key_input_init);
+module_exit(key_input_exit);
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Your Name");

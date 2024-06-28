@@ -53,7 +53,7 @@ static struct file_operations fops = {
     .write = led_write,
 };
 
-static struct miscdevice led_misc_dev = {
+static struct miscdevice key_misc_dev = {
     .minor = 144,
     .fops = &fops,
     .name = "miscled"
@@ -145,7 +145,7 @@ void led_init(void)
 int led_probe(struct platform_device *dev)
 {
     int result;
-    result = misc_register(&led_misc_dev);
+    result = misc_register(&key_misc_dev);
 
     printk(KERN_INFO "gpio_led module loaded \n");
 
@@ -157,7 +157,7 @@ static int led_remove(struct platform_device *dev)
 {
     gpio_direction_output(gpioled.led_gpio, 1);
     gpio_free(gpioled.devid);
-    misc_deregister(&led_misc_dev);
+    misc_deregister(&key_misc_dev);
     printk(KERN_INFO "gpio_led module unloaded \n");
 }
 
