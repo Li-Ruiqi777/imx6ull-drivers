@@ -128,7 +128,6 @@ void key_io_init(void)
     gpio_request(key_dev.irqkeydesc.gpio_index, "key0");
     gpio_direction_input(key_dev.irqkeydesc.gpio_index);
     key_dev.irqkeydesc.irq_num = irq_of_parse_and_map(key_dev.nd, 0);
-
     /* 配置中断 */
     key_dev.irqkeydesc.handler = key0_handler;
     key_dev.irqkeydesc.value = 0;

@@ -198,6 +198,10 @@ static int oled_i2c_probe(struct i2c_client *client, const struct i2c_device_id 
 
     oled_client = client;
 
+    oled_init();
+    oled_clear();
+    oled_showstring(1, 1, "LRQ 666!");
+
     return 0;
 }
 
