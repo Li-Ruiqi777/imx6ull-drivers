@@ -31,21 +31,21 @@ struct oled_dev
 
 static struct oled_dev oledcdev;
 
-static struct i2c_client *oled_client = NULL;
+static struct i2c_client *oled_i2c_client = NULL;
 
 static int oled_write_command(uint8_t command)
 {
-    if (oled_client == NULL)
+    if (oled_i2c_client == NULL)
         return -1;
     uint8_t buffer[2];
     buffer[0] = 0x00; // Co = 0, D/C# = 0
     buffer[1] = command;
-    return i2c_master_send(oled_client, buffer, 2);
+    return i2c_master_send(oled_i2c_client, buffer, 2);
 }
 
 static int oled_write_data(uint8_t *data, size_t size)
 {
-    if (oled_client == NULL)
+    if (oled_i2c_client == NULL)
         return -1;
     if (data == NULL)
     {
@@ -55,7 +55,7 @@ static int oled_write_data(uint8_t *data, size_t size)
     uint8_t buffer[129];
     buffer[0] = 0x40; // Co = 0, D/C# = 1
     memcpy(&buffer[1], data, size);
-    return i2c_master_send(oled_client, buffer, size + 1);
+    return i2c_master_send(oled_i2c_client, buffer, size + 1);
 }
 
 void oled_init(void)
@@ -196,7 +196,7 @@ static int oled_i2c_probe(struct i2c_client *client, const struct i2c_device_id 
         return PTR_ERR(oledcdev.device);
     }
 
-    oled_client = client;
+    oled_i2c_client = client;
 
     oled_init();
     oled_clear();
