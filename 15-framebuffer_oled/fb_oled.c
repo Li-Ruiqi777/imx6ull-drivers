@@ -20,9 +20,13 @@
 #include <asm/mach/map.h>
 #include <asm/uaccess.h>
 
+#include "asm/memory.h"
+#include "linux/gfp.h"
+#include "linux/printk.h"
+#include "linux/slab.h"
 #include "oled.h"
 
-struct i2c_client *oled_i2c_client;
+static struct i2c_client *oled_i2c_client;
 static struct fb_info *oled_fb_info = NULL;
 static struct task_struct *oled_kthread;
 
@@ -218,8 +222,6 @@ static int oled_i2c_probe(struct i2c_client *client, const struct i2c_device_id 
 {
     printk("oled_probe \n");
 
-    dma_addr_t phy_addr_fb;
-
     oled_i2c_client = client;
     if (client == NULL)
     {
@@ -245,7 +247,9 @@ static int oled_i2c_probe(struct i2c_client *client, const struct i2c_device_id 
     /* c. 分配显存 */
     // oled_fb_info->screen_base = dmam_alloc_coherent(&client->dev,
     // oled_fb_info->fix.smem_len, &phy_addr_fb, GFP_KERNEL);
-    oled_fb_info->screen_base = devm_kzalloc(&client->dev, oled_fb_info->fix.smem_len, GFP_KERNEL);
+
+    // oled_fb_info->screen_base = devm_kzalloc(&client->dev, oled_fb_info->fix.smem_len, GFP_KERNEL);
+    oled_fb_info->screen_base = kzalloc(oled_fb_info->fix.smem_len, GFP_DMA);
     if (oled_fb_info->screen_base == NULL)
     {
         printk(KERN_ERR "oled_i2c_probe: failed to allocate memory for "
@@ -253,14 +257,15 @@ static int oled_i2c_probe(struct i2c_client *client, const struct i2c_device_id 
         return -ENOMEM;
     }
 
-    oled_fb_info->fix.smem_start = phy_addr_fb; // fb的物理地址
+    oled_fb_info->fix.smem_start = virt_to_phys(oled_fb_info->screen_base); // fb的物理地址
 
     oled_fb_info->fix.type = FB_TYPE_PACKED_PIXELS; // 表示像素类型
     oled_fb_info->fix.visual = FB_VISUAL_MONO10;    // 表示单色屏幕
 
     oled_fb_info->fix.line_length = oled_fb_info->var.xres * oled_fb_info->var.bits_per_pixel / 8; // 每行的长度
 
-    data_buf = devm_kzalloc(&client->dev, oled_fb_info->fix.smem_len, GFP_KERNEL);
+    // data_buf = devm_kzalloc(&client->dev, oled_fb_info->fix.smem_len, GFP_KERNEL);
+    data_buf = kzalloc(oled_fb_info->fix.smem_len, GFP_KERNEL);
     if (data_buf == NULL)
     {
         printk(KERN_ERR "oled_i2c_probe: failed to allocate memory for data_buf\n");
@@ -286,6 +291,8 @@ static int oled_i2c_probe(struct i2c_client *client, const struct i2c_device_id 
 
 static int oled_i2c_remove(struct i2c_client *i2c)
 {
+    kzfree(oled_fb_info->screen_base);
+    kzfree(data_buf);
     return 0;
 }
 

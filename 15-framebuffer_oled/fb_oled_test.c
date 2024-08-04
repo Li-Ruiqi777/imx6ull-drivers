@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/ioctl.h>
+#include <string.h>
 
 #define FONTDATAMAX 4096
 
