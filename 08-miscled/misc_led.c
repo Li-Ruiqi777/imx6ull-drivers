@@ -121,7 +121,7 @@ void led_init(void)
     if (gpioled.nd == NULL)
     {
         printk("gpioled node nost find!\r\n");
-        return -EINVAL;
+        return;
     }
     else
     {
@@ -133,7 +133,7 @@ void led_init(void)
     if (gpioled.led_gpio < 0)
     {
         printk("can't get led-gpio! \r\n");
-        return -EINVAL;
+        return;
     }
     printk("led-gpio num = %d\r\n", gpioled.led_gpio);
 
